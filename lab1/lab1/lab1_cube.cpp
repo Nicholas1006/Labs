@@ -124,6 +124,8 @@ struct AxisXYZ {
 struct Box {
 	glm::vec3 position;			// Position of the box 
 	glm::vec3 scale;			// Size of the box in each axis
+	glm::float32 rotationDirection;
+	glm::vec3 rotationAmount;
 
 	GLfloat vertex_buffer_data[72] = {	// Vertex definition for a canonical box
 		// Front face
@@ -231,10 +233,12 @@ struct Box {
 	GLuint mvpMatrixID;
 	GLuint programID;
 
-	void initialize(glm::vec3 position, glm::vec3 scale) {
+	void initialize(glm::vec3 position, glm::vec3 scale, glm::float32 rotationDirection ,glm::vec3 rotationAmount) {
 		// Define scale of the box geometry
 		this->position = position;
 		this->scale = scale;
+		this->rotationDirection = rotationDirection;
+		this->rotationAmount = rotationAmount;
 
 		// Create a vertex array object
 		glGenVertexArrays(1, &vertexArrayID);
@@ -283,8 +287,15 @@ struct Box {
 		// ------------------------------------
         glm::mat4 modelMatrix = glm::mat4();
 
+		//Translate the box to its position
+		modelMatrix = glm::translate(modelMatrix,position);
+		//Scale the box along each axis
+		modelMatrix = glm::scale(modelMatrix,scale);
+		//rotate the box 
+		modelMatrix = glm::rotate(modelMatrix, rotationDirection, rotationAmount);
+
 		// TODO: Set model-view-projection matrix
-		glm::mat4 mvp = cameraMatrix;
+		glm::mat4 mvp = cameraMatrix * modelMatrix;
 		// ------------------------------------
 		glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &mvp[0][0]);
 
@@ -358,12 +369,30 @@ int main(void)
 	// A default box
 	Box mybox;
 	mybox.initialize(glm::vec3(0, 0, 0),        // translation
-                     glm::vec3(30, 30, 30)      // scale
+                     glm::vec3(30, 30, 30),      // scale
+					 glm::radians(25.0f), 
+					 glm::vec3(0.0f, 1.0f, 0.0f)
     );
+
+	int AMOUNT_OF_BOXES = 10.0f;
+	Box* extraBoxes = new Box[AMOUNT_OF_BOXES];
+	for (int x = 0; x< AMOUNT_OF_BOXES; x++){
+		extraBoxes[x] = Box();
+		extraBoxes[x].initialize(
+			glm::vec3(100.0f*sin(6.258f * x/AMOUNT_OF_BOXES), 100.0f*cos(6.28318 * x/AMOUNT_OF_BOXES), 0.0f),        // translation
+			glm::vec3(10, 10, 10),      // scale
+			glm::radians(-360.0f * x / AMOUNT_OF_BOXES), 
+			glm::vec3(0.0f, (0.0f), 1.0f)
+		);
+	}
+
 
 	// TODO: Prepare a perspective camera 
 	// ------------------------------------
-	glm::mat4 projectionMatrix = glm::mat4();
+	glm::float32 FoV = 45;
+	glm::float32 zNear = 0.1f;
+	glm::float32 zFar = 1000.0f;
+	glm::mat4 projectionMatrix = glm::perspective(glm::radians(FoV), 4.0f / 3.0f, zNear, zFar);
     // ------------------------------------
 
 	do
@@ -372,7 +401,7 @@ int main(void)
 
 		// TODO: Set camera view matrix 
 		// ------------------------------------
-        glm::mat4 viewMatrix = glm::mat4();
+        glm::mat4 viewMatrix = glm::lookAt(eye_center,lookat,up);
 		// ------------------------------------
 
 		// For convenience, we multiply the projection and view matrix together and pass a single matrix for rendering
@@ -380,6 +409,13 @@ int main(void)
 
 		// Visualize the global axes
         debugAxes.render(vp);
+
+		//render the box
+		mybox.render(vp);
+		for (int x = 0; x< 10; x++){
+			extraBoxes[x].render(vp);
+		}
+
 
 		// Swap buffers
 		glfwSwapBuffers(window);
