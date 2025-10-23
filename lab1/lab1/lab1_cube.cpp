@@ -412,7 +412,7 @@ int main(void)
 
 		//render the box
 		mybox.render(vp);
-		for (int x = 0; x< 10; x++){
+		for (int x = 0; x< AMOUNT_OF_BOXES; x++){
 			extraBoxes[x].render(vp);
 		}
 
