@@ -13,6 +13,25 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+
+int pow(int base, int exp) { 
+	if(exp==0) {
+		return 1;
+	}
+	else{
+		return base * pow(base, exp - 1);
+	}
+}
+
+int abs(int x) {
+	if(x<0) {
+		return -x;
+	}
+	else {
+		return x;
+	}
+}
+
 static GLFWwindow *window;
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 
@@ -24,7 +43,7 @@ static glm::vec3 up(0, 1, 0);
 // View control 
 static float viewAzimuth = 0.f;
 static float viewPolar = 0.f;
-static float viewDistance = 300.0f;
+static float viewDistance = 500.0f;
 
 static GLuint LoadTextureTileBox(const char *texture_file_path) {
     int w, h, channels;
@@ -202,9 +221,10 @@ struct Building {
 	GLuint textureSamplerID;
 	GLuint programID;
 
-	void initialize(glm::vec3 position, glm::vec3 scale) {
+	void initialize(glm::vec3 position, glm::vec3 scale, int modelID) {
 		for (int i = 0; i < 72; ++i) color_buffer_data[i] = 1.0f;
-		for (int i = 0; i < 24; ++i) uv_buffer_data[2*i+1] *= 5;
+		const float building_texture_repeat = 5*(scale.y / scale.x);
+		for (int i = 0; i < 24; ++i) uv_buffer_data[2*i+1] *= building_texture_repeat;
 		// Define scale of the building geometry
 		this->position = position;
 		this->scale = scale;
@@ -245,7 +265,8 @@ struct Building {
 		mvpMatrixID = glGetUniformLocation(programID, "MVP");
 
         // Load a texture 
-        textureID = LoadTextureTileBox("../lab2/facade4.jpg");
+        std::string texture_file_path = "../lab2/facade" + std::to_string(modelID) + ".jpg";
+        this->textureID = LoadTextureTileBox(texture_file_path.c_str());
 
         // Get a handle for our "textureSampler" uniform
 		textureSamplerID = glGetUniformLocation(programID,"textureSampler");
@@ -268,6 +289,7 @@ struct Building {
 		// -----------------------
         glm::mat4 modelMatrix = glm::mat4();    
         // Scale the box along each axis to make it look like a building
+		modelMatrix = glm::translate(modelMatrix, position);
         modelMatrix = glm::scale(modelMatrix, glm::vec3(scale.x, scale.y * 5, scale.z));
         // -----------------------
 
@@ -350,10 +372,33 @@ int main(void)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	// TODO: Create more buildings
+	// Create more buildings
     // ---------------------------
-	Building b;
-	b.initialize(glm::vec3(0, 0, 0), glm::vec3(30, 30, 30));
+	const int gridSize = 10;
+	const int buildingDistance = 70;
+	const int buildingMinSize=10;
+	const int buildingMaxSize = 30;
+	
+	std::vector<Building> buildings;
+	for (int i = 0; i < gridSize; i++)
+	{
+		for (int j = 0; j < gridSize; j++)
+		{
+			Building b;
+			const int buildingWidth = abs(pow(5+i, 8+j)) % (buildingMaxSize - buildingMinSize) + 10;
+			const int buildingHeight = abs(pow(6+i, 9+j)) % (buildingMaxSize - buildingMinSize) + 10;
+			const int buildingDepth = buildingWidth;
+			const int buildingModel = abs(pow(4+i, 5+j)) % 5;
+			const glm::vec3 buildingSize = glm::vec3(buildingWidth,buildingHeight,buildingDepth);
+			const glm::vec3 buildingLocation = glm::vec3(
+				(-buildingDistance*gridSize)/2 + (i * buildingDistance), 
+				buildingHeight*5,
+				(-buildingDistance*gridSize)/2 + (j * buildingDistance)
+			);
+			b.initialize(buildingLocation, buildingSize, buildingModel);
+			buildings.push_back(b);
+		}
+	}
     // ---------------------------
 
 	// Camera setup
@@ -375,7 +420,10 @@ int main(void)
 		glm::mat4 vp = projectionMatrix * viewMatrix;
 
 		// Render the building
-		b.render(vp);
+		for (int i = 0; i < buildings.size(); i++)
+		{
+			buildings[i].render(vp);
+		}
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -385,7 +433,9 @@ int main(void)
 	while (!glfwWindowShouldClose(window));
 
 	// Clean up
-	b.cleanup();
+	for (int i = 0; i < buildings.size(); i++) {
+		buildings[i].cleanup();
+	}
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
