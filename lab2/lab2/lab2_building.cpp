@@ -204,6 +204,7 @@ struct Building {
 
 	void initialize(glm::vec3 position, glm::vec3 scale) {
 		for (int i = 0; i < 72; ++i) color_buffer_data[i] = 1.0f;
+		for (int i = 0; i < 24; ++i) uv_buffer_data[2*i+1] *= 5;
 		// Define scale of the building geometry
 		this->position = position;
 		this->scale = scale;
@@ -263,11 +264,11 @@ struct Building {
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
 
-		// TODO: Model transform 
+		// Model transform 
 		// -----------------------
         glm::mat4 modelMatrix = glm::mat4();    
         // Scale the box along each axis to make it look like a building
-        modelMatrix = glm::scale(modelMatrix, scale);
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(scale.x, scale.y * 5, scale.z));
         // -----------------------
 
 		// Set model-view-projection matrix
