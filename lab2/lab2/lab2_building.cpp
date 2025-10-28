@@ -150,9 +150,44 @@ struct Building {
 		20, 22, 23, 
 	};
 
-    // TODO: Define UV buffer data
-    // ---------------------------
-    // ---------------------------
+    // Define UV buffer data
+     GLfloat uv_buffer_data[48] = {
+		// Front
+		0.0f, 1.0f,
+		1.0f, 1.0f,
+		1.0f, 0.0f,
+		0.0f, 0.0f,
+
+		// Back
+		0.0f, 1.0f,
+		1.0f, 1.0f,
+		1.0f, 0.0f,
+		0.0f, 0.0f,
+
+		// Left
+		0.0f, 1.0f,
+		1.0f, 1.0f,
+		1.0f, 0.0f,
+		0.0f, 0.0f,
+
+		// Right
+		0.0f, 1.0f,
+		1.0f, 1.0f,
+		1.0f, 0.0f,
+		0.0f, 0.0f,
+
+		// Top - we do not want texture the top
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+
+		// Bottom - we do not want texture the bottom
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 0.0f,
+	};
     
 	// OpenGL buffers
 	GLuint vertexArrayID; 
@@ -168,6 +203,7 @@ struct Building {
 	GLuint programID;
 
 	void initialize(glm::vec3 position, glm::vec3 scale) {
+		for (int i = 0; i < 72; ++i) color_buffer_data[i] = 1.0f;
 		// Define scale of the building geometry
 		this->position = position;
 		this->scale = scale;
@@ -187,9 +223,10 @@ struct Building {
 		glBindBuffer(GL_ARRAY_BUFFER, colorBufferID);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(color_buffer_data), color_buffer_data, GL_STATIC_DRAW);
 
-		// TODO: Create a vertex buffer object to store the UV data
-		// --------------------------------------------------------
-        // --------------------------------------------------------
+		/// Create a vertex buffer object to store the UV data
+		glGenBuffers(1, &uvBufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, uvBufferID);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(uv_buffer_data), uv_buffer_data,GL_STATIC_DRAW);
 
 		// Create an index buffer object to store the index data that defines triangle faces
 		glGenBuffers(1, &indexBufferID);
@@ -206,13 +243,11 @@ struct Building {
 		// Get a handle for our "MVP" uniform
 		mvpMatrixID = glGetUniformLocation(programID, "MVP");
 
-        // TODO: Load a texture 
-        // --------------------
-        // --------------------
+        // Load a texture 
+        textureID = LoadTextureTileBox("../lab2/facade4.jpg");
 
-        // TODO: Get a handle to texture sampler 
-        // -------------------------------------
-        // -------------------------------------
+        // Get a handle for our "textureSampler" uniform
+		textureSamplerID = glGetUniformLocation(programID,"textureSampler");
 	}
 
 	void render(glm::mat4 cameraMatrix) {
@@ -239,9 +274,14 @@ struct Building {
 		glm::mat4 mvp = cameraMatrix * modelMatrix;
 		glUniformMatrix4fv(mvpMatrixID, 1, GL_FALSE, &mvp[0][0]);
 
-		// TODO: Enable UV buffer and texture sampler
-		// ------------------------------------------
-        // ------------------------------------------
+		// Enable UV buffer and texture sampler
+		glEnableVertexAttribArray(2);
+		glBindBuffer(GL_ARRAY_BUFFER, uvBufferID);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+		// Set textureSampler to use texture unit 0
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glUniform1i(textureSamplerID, 0); 
 
 		// Draw the box
 		glDrawElements(
