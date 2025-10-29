@@ -56,62 +56,68 @@ struct SkyBox {
 	glm::vec3 scale;		// Size of the box in each axis
 	
 	GLfloat vertex_buffer_data[72] = {
-		// Front face (facing -Z direction - inner surface)
-		-1.0f, -1.0f, -1.0f, 
-		1.0f, -1.0f, -1.0f, 
-		1.0f, 1.0f, -1.0f, 
-		-1.0f, 1.0f, -1.0f, 
-		
-		// Back face (facing +Z direction - inner surface)
-		-1.0f, -1.0f, 1.0f, 
-		1.0f, -1.0f, 1.0f, 
-		1.0f, 1.0f, 1.0f, 
-		-1.0f, 1.0f, 1.0f,
-		
-		// Left face (facing +X direction - inner surface)
-		1.0f, -1.0f, -1.0f, 
-		1.0f, -1.0f, 1.0f, 
-		1.0f, 1.0f, 1.0f, 
-		1.0f, 1.0f, -1.0f, 
+    // Front face (facing +Z direction)
+    -1.0f, -1.0f, 1.0f, 
+    1.0f, -1.0f, 1.0f, 
+    1.0f, 1.0f, 1.0f, 
+    -1.0f, 1.0f, 1.0f, 
+    
+    // Back face (facing -Z direction)
+    1.0f, -1.0f, -1.0f, 
+    -1.0f, -1.0f, -1.0f, 
+    -1.0f, 1.0f, -1.0f, 
+    1.0f, 1.0f, -1.0f,
+    
+    // Right face (facing +X direction)
+    1.0f, -1.0f, 1.0f, 
+    1.0f, -1.0f, -1.0f, 
+    1.0f, 1.0f, -1.0f, 
+    1.0f, 1.0f, 1.0f, 
 
-		// Right face (facing -X direction - inner surface)
-		-1.0f, -1.0f, 1.0f, 
-		-1.0f, -1.0f, -1.0f, 
-		-1.0f, 1.0f, -1.0f, 
-		-1.0f, 1.0f, 1.0f,
+    // Left face (facing -X direction)
+    -1.0f, -1.0f, -1.0f, 
+    -1.0f, -1.0f, 1.0f, 
+    -1.0f, 1.0f, 1.0f, 
+    -1.0f, 1.0f, -1.0f,
 
-		// Top face (facing -Y direction - inner surface)
-		-1.0f, 1.0f, -1.0f, 
-		1.0f, 1.0f, -1.0f, 
-		1.0f, 1.0f, 1.0f, 
-		-1.0f, 1.0f, 1.0f, 
+    // Top face (facing +Y direction)
+    -1.0f, 1.0f, -1.0f, 
+    1.0f, 1.0f, -1.0f, 
+    1.0f, 1.0f, 1.0f, 
+    -1.0f, 1.0f, 1.0f, 
 
-		// Bottom face (facing +Y direction - inner surface)
-		-1.0f, -1.0f, 1.0f, 
-		1.0f, -1.0f, 1.0f, 
-		1.0f, -1.0f, -1.0f, 
-		-1.0f, -1.0f, -1.0f, 
-	};
+    // Bottom face (facing -Y direction)
+    -1.0f, -1.0f, 1.0f, 
+    1.0f, -1.0f, 1.0f, 
+    1.0f, -1.0f, -1.0f, 
+    -1.0f, -1.0f, -1.0f, 
+};
 
-	GLuint index_buffer_data[36] = {		// 12 triangle faces of a box
-		0, 1, 2, 	
-		0, 2, 3, 
-		
-		4, 5, 6, 
-		4, 6, 7, 
+	GLuint index_buffer_data[36] = {
+    // Front face (-Z)
+    0, 2, 1,     
+    0, 3, 2, 
+    
+    // Back face (+Z)
+    4, 6, 5, 
+    4, 7, 6, 
 
-		8, 9, 10, 
-		8, 10, 11, 
+    // Left face (+X)
+    8, 10, 9, 
+    8, 11, 10, 
 
-		12, 13, 14, 
-		12, 14, 15, 
+    // Right face (-X)
+    12, 13, 14, 
+    12, 14, 15, 
 
-		16, 17, 18, 
-		16, 18, 19, 
+    // Top face (-Y)
+    16, 18, 17, 
+    16, 19, 18, 
 
-		20, 21, 22, 
-		20, 22, 23, 
-	};
+    // Bottom face (+Y)
+    20, 21, 22, 
+    20, 22, 23, 
+};
 
     GLfloat color_buffer_data[72] = {
 		// Front, red
@@ -153,42 +159,42 @@ struct SkyBox {
 
     // Define UV buffer data
       GLfloat uv_buffer_data[48] = {
-		// Front face (-Z) - bottom middle
-		0.25f, 0.333f,
-		0.5f, 0.333f,
-		0.5f, 0.667f,
-		0.25f, 0.667f,
+    // (+Z)
+    0.25f, 0.333333333333f,
+    0.5f, 0.333333333333f,
+    0.5f, 0.66666666667f,
+    0.25f, 0.66666666667f,
 
-		// Back face (+Z) - top middle  
-		0.75f, 0.333f,
-		1.0f, 0.333f,
-		1.0f, 0.667f,
-		0.75f, 0.667f,
+    // (-Z)
+    0.75f, 0.333333333333f,
+    1.0f, 0.333333333333f,
+    1.0f, 0.66666666667f,
+    0.75f, 0.66666666667f,
 
-		// Left face (+X) - left middle
-		0.0f, 0.333f,
-		0.25f, 0.333f,
-		0.25f, 0.667f,
-		0.0f, 0.667f,
+    // (+X)
+    0.5f, 0.333333333333f,
+    0.75f, 0.333333333333f,
+    0.75f, 0.66666666667f,
+    0.5f, 0.66666666667f,
 
-		// Right face (-X) - right middle
-		0.5f, 0.333f,
-		0.75f, 0.333f,
-		0.75f, 0.667f,
-		0.5f, 0.667f,
+    // (-X)
+    0.0f, 0.333333333333f,
+    0.25f, 0.333333333333f,
+    0.25f, 0.66666666667f,
+    0.0f, 0.66666666667f,
 
-		// Top face (-Y) - top middle
-		0.25f, 0.0f,
-		0.5f, 0.0f,
-		0.5f, 0.333f,
-		0.25f, 0.333f,
-
-		// Bottom face (+Y) - bottom middle
-		0.25f, 0.667f,
-		0.5f, 0.667f,
-		0.5f, 1.0f,
-		0.25f, 1.0f,
-	};
+    // (-Y) -
+    0.25f, 1.0f,     
+    0.5f, 1.0f,     
+    0.5f, 0.66666666667f,   
+    0.25f, 0.66666666667f,  
+    
+    // +Y)
+    0.25f, 0.333333333333f,  
+    0.5f, 0.333333333333f,   
+    0.5f, 0.0f,     
+    0.25f, 0.0f,    
+};
     
 	// OpenGL buffers
 	GLuint vertexArrayID; 
@@ -245,7 +251,10 @@ struct SkyBox {
 		mvpMatrixID = glGetUniformLocation(programID, "MVP");
 
         // Load a texture 
-        this->textureID = LoadSkyBoxTexture("../lab2/sky_debug.png");
+        this->textureID = LoadSkyBoxTexture("../lab2/sky.png");
+        //this->textureID = LoadSkyBoxTexture("../lab2/sky_debug.png");
+        //this->textureID = LoadSkyBoxTexture("../lab2/studio_garden.png");
+        //this->textureID = LoadSkyBoxTexture("../lab2/studio_garden_debug.png");
 
         // Get a handle for our "textureSampler" uniform
 		textureSamplerID = glGetUniformLocation(programID,"textureSampler");
@@ -253,6 +262,9 @@ struct SkyBox {
 
 	void render(glm::mat4 cameraMatrix) {
 		glUseProgram(programID);
+
+        glDepthMask(GL_FALSE);
+        glDisable(GL_CULL_FACE);
 
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
@@ -270,6 +282,7 @@ struct SkyBox {
         // Scale the box along each axis to make it look like a building
 		modelMatrix = glm::translate(modelMatrix, position);
         modelMatrix = glm::scale(modelMatrix, glm::vec3(scale.x, scale.y, scale.z));
+        modelMatrix = glm::rotate(modelMatrix, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         // -----------------------
 
 		// Set model-view-projection matrix
@@ -356,7 +369,7 @@ int main(void)
 	const int gridSize = 10;
 	
     SkyBox skybox;
-    skybox.initialize(glm::vec3(0,0,0), glm::vec3(500,500,500));
+    skybox.initialize(glm::vec3(0,0,0), glm::vec3(5000,5000,5000));
     // ---------------------------
 
 	// Camera setup
@@ -367,7 +380,7 @@ int main(void)
 	glm::mat4 viewMatrix, projectionMatrix;
     glm::float32 FoV = 45;
 	glm::float32 zNear = 0.1f; 
-	glm::float32 zFar = 5000.0f;
+	glm::float32 zFar = 10000.0f;
 	projectionMatrix = glm::perspective(glm::radians(FoV), 4.0f / 3.0f, zNear, zFar);
 
 	do
