@@ -45,7 +45,7 @@ static float viewAzimuth = 0.f;
 static float viewPolar = 0.f;
 static float viewDistance = 500.0f;
 
-static GLuint LoadSkyBoxTexture(const char *texture_file_path) {
+static GLuint LoadTextureTileBox(const char *texture_file_path) {
     int w, h, channels;
     uint8_t* img = stbi_load(texture_file_path, &w, &h, &channels, 3);
     GLuint texture;
@@ -69,7 +69,7 @@ static GLuint LoadSkyBoxTexture(const char *texture_file_path) {
     return texture;
 }
 
-struct SkyBox {
+struct Building {
 	glm::vec3 position;		// Position of the box 
 	glm::vec3 scale;		// Size of the box in each axis
 	
@@ -266,7 +266,7 @@ struct SkyBox {
 
         // Load a texture 
         std::string texture_file_path = "../lab2/facade" + std::to_string(modelID) + ".jpg";
-        this->textureID = LoadSkyBoxTexture(texture_file_path.c_str());
+        this->textureID = LoadTextureTileBox(texture_file_path.c_str());
 
         // Get a handle for our "textureSampler" uniform
 		textureSamplerID = glGetUniformLocation(programID,"textureSampler");
@@ -379,12 +379,12 @@ int main(void)
 	const int buildingMinSize=10;
 	const int buildingMaxSize = 30;
 	
-	std::vector<SkyBox> buildings;
+	std::vector<Building> buildings;
 	for (int i = 0; i < gridSize; i++)
 	{
 		for (int j = 0; j < gridSize; j++)
 		{
-			SkyBox b;
+			Building b;
 			const int buildingWidth = abs(pow(5+i, 8+j)) % (buildingMaxSize - buildingMinSize) + 10;
 			const int buildingHeight = abs(pow(6+i, 9+j)) % (buildingMaxSize - buildingMinSize) + 10;
 			const int buildingDepth = buildingWidth;
