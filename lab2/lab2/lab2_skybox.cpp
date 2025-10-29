@@ -14,24 +14,6 @@
 #include <math.h>
 
 
-int pow(int base, int exp) { 
-	if(exp==0) {
-		return 1;
-	}
-	else{
-		return base * pow(base, exp - 1);
-	}
-}
-
-int abs(int x) {
-	if(x<0) {
-		return -x;
-	}
-	else {
-		return x;
-	}
-}
-
 static GLFWwindow *window;
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 
@@ -53,9 +35,9 @@ static GLuint LoadSkyBoxTexture(const char *texture_file_path) {
     glBindTexture(GL_TEXTURE_2D, texture);  
 
     // To tile textures on a box, we set wrapping to repeat
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     if (img) {
@@ -73,45 +55,65 @@ struct SkyBox {
 	glm::vec3 position;		// Position of the box 
 	glm::vec3 scale;		// Size of the box in each axis
 	
-	GLfloat vertex_buffer_data[72] = {	// Vertex definition for a canonical box
-		// Front face
+	GLfloat vertex_buffer_data[72] = {
+		// Front face (facing -Z direction - inner surface)
+		-1.0f, -1.0f, -1.0f, 
+		1.0f, -1.0f, -1.0f, 
+		1.0f, 1.0f, -1.0f, 
+		-1.0f, 1.0f, -1.0f, 
+		
+		// Back face (facing +Z direction - inner surface)
 		-1.0f, -1.0f, 1.0f, 
 		1.0f, -1.0f, 1.0f, 
 		1.0f, 1.0f, 1.0f, 
-		-1.0f, 1.0f, 1.0f, 
+		-1.0f, 1.0f, 1.0f,
 		
-		// Back face 
+		// Left face (facing +X direction - inner surface)
 		1.0f, -1.0f, -1.0f, 
-		-1.0f, -1.0f, -1.0f, 
-		-1.0f, 1.0f, -1.0f, 
-		1.0f, 1.0f, -1.0f,
-		
-		// Left face
-		-1.0f, -1.0f, -1.0f, 
-		-1.0f, -1.0f, 1.0f, 
-		-1.0f, 1.0f, 1.0f, 
-		-1.0f, 1.0f, -1.0f, 
-
-		// Right face 
 		1.0f, -1.0f, 1.0f, 
-		1.0f, -1.0f, -1.0f, 
-		1.0f, 1.0f, -1.0f, 
-		1.0f, 1.0f, 1.0f,
-
-		// Top face
-		-1.0f, 1.0f, 1.0f, 
 		1.0f, 1.0f, 1.0f, 
 		1.0f, 1.0f, -1.0f, 
-		-1.0f, 1.0f, -1.0f, 
 
-		// Bottom face
-		-1.0f, -1.0f, -1.0f, 
-		1.0f, -1.0f, -1.0f, 
-		1.0f, -1.0f, 1.0f, 
+		// Right face (facing -X direction - inner surface)
 		-1.0f, -1.0f, 1.0f, 
+		-1.0f, -1.0f, -1.0f, 
+		-1.0f, 1.0f, -1.0f, 
+		-1.0f, 1.0f, 1.0f,
+
+		// Top face (facing -Y direction - inner surface)
+		-1.0f, 1.0f, -1.0f, 
+		1.0f, 1.0f, -1.0f, 
+		1.0f, 1.0f, 1.0f, 
+		-1.0f, 1.0f, 1.0f, 
+
+		// Bottom face (facing +Y direction - inner surface)
+		-1.0f, -1.0f, 1.0f, 
+		1.0f, -1.0f, 1.0f, 
+		1.0f, -1.0f, -1.0f, 
+		-1.0f, -1.0f, -1.0f, 
 	};
 
-	GLfloat color_buffer_data[72] = {
+	GLuint index_buffer_data[36] = {		// 12 triangle faces of a box
+		0, 1, 2, 	
+		0, 2, 3, 
+		
+		4, 5, 6, 
+		4, 6, 7, 
+
+		8, 9, 10, 
+		8, 10, 11, 
+
+		12, 13, 14, 
+		12, 14, 15, 
+
+		16, 17, 18, 
+		16, 18, 19, 
+
+		20, 21, 22, 
+		20, 22, 23, 
+	};
+
+    GLfloat color_buffer_data[72] = {
 		// Front, red
 		1.0f, 0.0f, 0.0f,
 		1.0f, 0.0f, 0.0f,
@@ -149,63 +151,43 @@ struct SkyBox {
 		1.0f, 0.0f, 1.0f,  
 	};
 
-	GLuint index_buffer_data[36] = {		// 12 triangle faces of a box
-		0, 1, 2, 	
-		0, 2, 3, 
-		
-		4, 5, 6, 
-		4, 6, 7, 
-
-		8, 9, 10, 
-		8, 10, 11, 
-
-		12, 13, 14, 
-		12, 14, 15, 
-
-		16, 17, 18, 
-		16, 18, 19, 
-
-		20, 21, 22, 
-		20, 22, 23, 
-	};
-
     // Define UV buffer data
-     GLfloat uv_buffer_data[48] = {
-		// Front
-		0.0f, 1.0f,
-		1.0f, 1.0f,
-		1.0f, 0.0f,
-		0.0f, 0.0f,
+      GLfloat uv_buffer_data[48] = {
+		// Front face (-Z) - bottom middle
+		0.25f, 0.333f,
+		0.5f, 0.333f,
+		0.5f, 0.667f,
+		0.25f, 0.667f,
 
-		// Back
-		0.0f, 1.0f,
-		1.0f, 1.0f,
-		1.0f, 0.0f,
-		0.0f, 0.0f,
+		// Back face (+Z) - top middle  
+		0.75f, 0.333f,
+		1.0f, 0.333f,
+		1.0f, 0.667f,
+		0.75f, 0.667f,
 
-		// Left
-		0.0f, 1.0f,
-		1.0f, 1.0f,
-		1.0f, 0.0f,
-		0.0f, 0.0f,
+		// Left face (+X) - left middle
+		0.0f, 0.333f,
+		0.25f, 0.333f,
+		0.25f, 0.667f,
+		0.0f, 0.667f,
 
-		// Right
-		0.0f, 1.0f,
-		1.0f, 1.0f,
-		1.0f, 0.0f,
-		0.0f, 0.0f,
+		// Right face (-X) - right middle
+		0.5f, 0.333f,
+		0.75f, 0.333f,
+		0.75f, 0.667f,
+		0.5f, 0.667f,
 
-		// Top - we do not want texture the top
-		0.0f, 0.0f,
-		0.0f, 0.0f,
-		0.0f, 0.0f,
-		0.0f, 0.0f,
+		// Top face (-Y) - top middle
+		0.25f, 0.0f,
+		0.5f, 0.0f,
+		0.5f, 0.333f,
+		0.25f, 0.333f,
 
-		// Bottom - we do not want texture the bottom
-		0.0f, 0.0f,
-		0.0f, 0.0f,
-		0.0f, 0.0f,
-		0.0f, 0.0f,
+		// Bottom face (+Y) - bottom middle
+		0.25f, 0.667f,
+		0.5f, 0.667f,
+		0.5f, 1.0f,
+		0.25f, 1.0f,
 	};
     
 	// OpenGL buffers
@@ -221,10 +203,8 @@ struct SkyBox {
 	GLuint textureSamplerID;
 	GLuint programID;
 
-	void initialize(glm::vec3 position, glm::vec3 scale, int modelID) {
+	void initialize(glm::vec3 position, glm::vec3 scale) {
 		for (int i = 0; i < 72; ++i) color_buffer_data[i] = 1.0f;
-		const float building_texture_repeat = 5*(scale.y / scale.x);
-		for (int i = 0; i < 24; ++i) uv_buffer_data[2*i+1] *= building_texture_repeat;
 		// Define scale of the building geometry
 		this->position = position;
 		this->scale = scale;
@@ -238,16 +218,16 @@ struct SkyBox {
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_buffer_data), vertex_buffer_data, GL_STATIC_DRAW);
 
-		// Create a vertex buffer object to store the color data
-        // TODO: 
-		glGenBuffers(1, &colorBufferID);
-		glBindBuffer(GL_ARRAY_BUFFER, colorBufferID);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(color_buffer_data), color_buffer_data, GL_STATIC_DRAW);
-
 		/// Create a vertex buffer object to store the UV data
 		glGenBuffers(1, &uvBufferID);
 		glBindBuffer(GL_ARRAY_BUFFER, uvBufferID);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(uv_buffer_data), uv_buffer_data,GL_STATIC_DRAW);
+
+        // Create a vertex buffer object to store the color data
+        // TODO: 
+		glGenBuffers(1, &colorBufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, colorBufferID);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(color_buffer_data), color_buffer_data, GL_STATIC_DRAW);
 
 		// Create an index buffer object to store the index data that defines triangle faces
 		glGenBuffers(1, &indexBufferID);
@@ -265,8 +245,7 @@ struct SkyBox {
 		mvpMatrixID = glGetUniformLocation(programID, "MVP");
 
         // Load a texture 
-        std::string texture_file_path = "../lab2/facade" + std::to_string(modelID) + ".jpg";
-        this->textureID = LoadSkyBoxTexture(texture_file_path.c_str());
+        this->textureID = LoadSkyBoxTexture("../lab2/sky_debug.png");
 
         // Get a handle for our "textureSampler" uniform
 		textureSamplerID = glGetUniformLocation(programID,"textureSampler");
@@ -290,7 +269,7 @@ struct SkyBox {
         glm::mat4 modelMatrix = glm::mat4();    
         // Scale the box along each axis to make it look like a building
 		modelMatrix = glm::translate(modelMatrix, position);
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(scale.x, scale.y * 5, scale.z));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(scale.x, scale.y, scale.z));
         // -----------------------
 
 		// Set model-view-projection matrix
@@ -375,30 +354,9 @@ int main(void)
 	// Create more buildings
     // ---------------------------
 	const int gridSize = 10;
-	const int buildingDistance = 70;
-	const int buildingMinSize=10;
-	const int buildingMaxSize = 30;
 	
-	std::vector<SkyBox> buildings;
-	for (int i = 0; i < gridSize; i++)
-	{
-		for (int j = 0; j < gridSize; j++)
-		{
-			SkyBox b;
-			const int buildingWidth = abs(pow(5+i, 8+j)) % (buildingMaxSize - buildingMinSize) + 10;
-			const int buildingHeight = abs(pow(6+i, 9+j)) % (buildingMaxSize - buildingMinSize) + 10;
-			const int buildingDepth = buildingWidth;
-			const int buildingModel = abs(pow(4+i, 5+j)) % 5;
-			const glm::vec3 buildingSize = glm::vec3(buildingWidth,buildingHeight,buildingDepth);
-			const glm::vec3 buildingLocation = glm::vec3(
-				(-buildingDistance*gridSize)/2 + (i * buildingDistance), 
-				buildingHeight*5,
-				(-buildingDistance*gridSize)/2 + (j * buildingDistance)
-			);
-			b.initialize(buildingLocation, buildingSize, buildingModel);
-			buildings.push_back(b);
-		}
-	}
+    SkyBox skybox;
+    skybox.initialize(glm::vec3(0,0,0), glm::vec3(500,500,500));
     // ---------------------------
 
 	// Camera setup
@@ -409,7 +367,7 @@ int main(void)
 	glm::mat4 viewMatrix, projectionMatrix;
     glm::float32 FoV = 45;
 	glm::float32 zNear = 0.1f; 
-	glm::float32 zFar = 1000.0f;
+	glm::float32 zFar = 5000.0f;
 	projectionMatrix = glm::perspective(glm::radians(FoV), 4.0f / 3.0f, zNear, zFar);
 
 	do
@@ -420,10 +378,7 @@ int main(void)
 		glm::mat4 vp = projectionMatrix * viewMatrix;
 
 		// Render the building
-		for (int i = 0; i < buildings.size(); i++)
-		{
-			buildings[i].render(vp);
-		}
+        skybox.render(vp);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -433,9 +388,7 @@ int main(void)
 	while (!glfwWindowShouldClose(window));
 
 	// Clean up
-	for (int i = 0; i < buildings.size(); i++) {
-		buildings[i].cleanup();
-	}
+    skybox.cleanup();
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();

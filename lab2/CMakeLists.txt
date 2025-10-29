@@ -28,6 +28,10 @@ add_executable(lab2_building
 	lab2/render/shader.cpp
 )
 
+add_executable(lab2_skybox
+	lab2/lab2_skybox.cpp
+	lab2/render/shader.cpp)
+
 target_link_libraries(lab2_model
 	${OPENGL_LIBRARY}
 	glfw
@@ -35,6 +39,12 @@ target_link_libraries(lab2_model
 )
 
 target_link_libraries(lab2_building
+	${OPENGL_LIBRARY}
+	glfw
+	glad
+)
+
+target_link_libraries(lab2_skybox
 	${OPENGL_LIBRARY}
 	glfw
 	glad
